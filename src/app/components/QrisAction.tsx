@@ -81,7 +81,7 @@ export default function QrisWithPopup({ qrContent }: { qrContent: string }) {
 
               <button
                 onClick={() => {
-                  const goPayLink = `gojek://gopay/qr?code=${qrContent}`;
+                  const goPayLink = `gopay://gopay/qr?code=${qrContent}`;
                   window.location.href = goPayLink;
 
                   // Optional: Fallback jika tidak terinstall
