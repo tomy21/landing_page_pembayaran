@@ -16,7 +16,7 @@ COPY . .
 # Build TypeScript
 RUN npm run build
 
-EXPOSE 4000
+EXPOSE 3000
 
 # Jalankan aplikasi
 CMD ["npm", "start"]

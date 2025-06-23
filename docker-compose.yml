@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "9230:4000"
+      - "9230:3000"
       # - "9241:4000"
 
     environment:
