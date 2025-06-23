@@ -6,16 +6,16 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "9228:4000"
+      - "9230:4000"
       # - "9241:4000"
 
     environment:
-      - DATABASE_URL_MAIN=mysql://root:50p4y5ky0v0!@8.215.44.147:3306/absensiDB
-      - DATABASE_URL_SECONDARY=mysql://root:50p4y5ky0v0!@8.215.44.147:3306/db_skyccc
-      - DATABASE_URL_THIRD=mysql://root:50p4y5ky0v0!@8.215.44.147:3306/skybillingdb
-      - NODE_ENV=production
-      - JWT_SECRET=158243e2-ccc0-4798-a944-2a5b0d1c90f3
-      - SIGNATURE_SECRET=c719f771-69ce-4945-9895-1759fb49df87
+      - NEXT_PUBLIC_GIBERISH_KEY=87e5df62d35aae739dc3b68ccb47383a
+      - NEXT_PUBLIC_SECRET_KEY_GENERATE=4636be61aaafdef65e11665422990a58
+      - NEXT_PUBLIC_PASSWORD=c43cba3b7b7d5c319a3f284a5d8188ac
+      - NEXT_PUBLIC_URL_INQUIRY=https://integrationparkingservice.skyparking.online
+      - NEXT_PUBLIC_URL_DEV_GENERATE_SIGNATURE=https://devintegrationv2.skyparking.online
+      - NEXT_PUBLIC_URL_GENERATE_MPM=https://apipaymentservice.skyparking.online
 
     restart: always
 
