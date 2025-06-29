@@ -129,8 +129,7 @@ export default function LandingPageClient() {
 
   const handleRefreshTariff = async () => {
     if (!tariffData) return;
-    setCountdown(0);
-    await generateQris(tariffData.vehicleType, tariffData.tariff);
+    await fetchData();
   };
 
   useEffect(() => {
