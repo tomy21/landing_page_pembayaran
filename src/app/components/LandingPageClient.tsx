@@ -141,34 +141,29 @@ export default function LandingPageClient() {
     <main className="min-h-screen bg-gradient-to-br from-white to-slate-100 flex items-center justify-center p-4">
       <div className="bg-white shadow-2xl rounded-2xl w-full max-w-md p-6 relative border border-gray-200">
         {tariffData && (
-          <div className="bg-yellow-50 py-4 px-6 rounded-xl mb-4 border border-yellow-300">
-            <table className="w-full text-sm text-gray-800">
-              <tbody>
-                <tr>
-                  <td className="font-semibold w-32">Lokasi</td>
-                  <td>: {tariffData?.location || "-"}</td>
-                </tr>
-                <tr>
-                  <td className="font-semibold">Tarif Saat Ini</td>
-                  <td>
-                    : Rp {tariffData?.tariff?.toLocaleString("id-ID") || "-"}
-                  </td>
-                </tr>
-                <tr>
-                  <td className="font-semibold">In Time</td>
-                  <td>
-                    :{" "}
-                    {tariffData?.inTime
-                      ? format(
-                          new Date(tariffData.inTime),
-                          "dd-MMM-yyyy HH:mm",
-                          { locale: id }
-                        )
-                      : "-"}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div className="flex flex-col justify-center items-center gap-y-2 bg-yellow-50 py-4 px-6 rounded-xl mb-4 border border-yellow-300">
+            <div className="flex justify-between items-start w-full">
+              <h1 className="text-sm font-bold">Location</h1>
+              <h1 className="text-sm text-slate-500">
+                {tariffData?.location || "-"}
+              </h1>
+            </div>
+            <div className="flex justify-between items-start w-full">
+              <h1 className="text-sm font-bold">In Time</h1>
+              <h1 className="text-sm text-slate-500">
+                {tariffData?.inTime
+                  ? format(new Date(tariffData.inTime), "dd-MMM-yyyy HH:mm", {
+                      locale: id,
+                    })
+                  : "-"}
+              </h1>
+            </div>
+            <div className="flex justify-between items-start w-full">
+              <h1 className="text-sm font-bold">Tariff</h1>
+              <h1 className="text-sm text-slate-500">
+                Rp {tariffData?.tariff?.toLocaleString("id-ID") || "-"}
+              </h1>
+            </div>
           </div>
         )}
 
