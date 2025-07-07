@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { decryptData, encryptData } from "../helper/CryptoUtils";
 import { id } from "date-fns/locale";
 import { format } from "date-fns";
+import { GoChecklist } from "react-icons/go";
 
 export default function LandingPageClient() {
   const searchParams = useSearchParams();
@@ -21,16 +22,24 @@ export default function LandingPageClient() {
   const [error, setError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number>(0);
   const [qrExpired, setQrExpired] = useState<boolean>(false);
+  const [isPayment, setIsPayment] = useState<boolean>(false);
 
+  // Countdown handler
   useEffect(() => {
     if (countdown <= 0) return;
-    const timer = setInterval(() => {
+
+    const interval = setInterval(() => {
       setCountdown((prev) => {
-        if (prev === 1) setQrExpired(true);
+        if (prev <= 1) {
+          setQrExpired(true);
+          clearInterval(interval);
+          return 0;
+        }
         return prev - 1;
       });
     }, 1000);
-    return () => clearInterval(timer);
+
+    return () => clearInterval(interval);
   }, [countdown]);
 
   const generateQris = async (vehicleType: string, tariff: number) => {
@@ -39,10 +48,12 @@ export default function LandingPageClient() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         data: {
-          product: vehicleType,
-          amount: { value: tariff.toString(), currency: "IDR" },
-          externalStoreId: "ID2020028029516",
-          additionalInfo: { qrType: "03" },
+          NMID: p1 || "",
+          transactionNo: p2 || "",
+          storeId: "ID2024356887370",
+          ProductName: vehicleType,
+          amount: tariff || 0,
+          expiry: "60",
         },
       }),
     });
@@ -80,44 +91,34 @@ export default function LandingPageClient() {
 
       const tariffResult = await tariffRes.json();
       const decryptedData = decryptData(tariffResult.data);
+
       if (!decryptedData || decryptedData.responseCode !== "211000") {
         throw new Error("Invalid response");
       }
 
       const { vehicleType, tariff, inTime } = decryptedData.data;
+
+      if (decryptedData.data.paymentStatus !== "PAID") {
+        setIsPayment(false);
+      }
+
       setTariffData(decryptedData.data);
 
+      // Hitung selisih waktu
       const now = new Date();
       const inTimeDate = new Date(inTime);
 
-      // Ambil menit dan detik dari inTime dan now
-      const inMinute = inTimeDate.getMinutes();
-      const nowMinute = now.getMinutes();
-      const nowSecond = now.getSeconds();
+      const diffMs = now.getTime() - inTimeDate.getTime();
+      const diffMinutes = Math.floor(diffMs / 60000);
 
-      // Hitung sisa detik menuju match menit (misal 31)
-      let targetMinute = inMinute;
-      if (nowMinute >= inMinute) {
-        // Kalau sudah lewat (misal inMinute 31 dan sekarang 32), tunggu ke jam berikutnya
-        targetMinute += 60;
+      let displayMinute = 0;
+      if (diffMinutes >= 5) {
+        displayMinute = 5;
+      } else if (diffMinutes >= 0) {
+        displayMinute = diffMinutes;
       }
 
-      const diffMinute = targetMinute - nowMinute;
-      const remainingSeconds = diffMinute * 60 - nowSecond;
-
-      // Beri batasan minimal / maksimal delay
-      let countdownValue = 0;
-      if (remainingSeconds > 180) {
-        countdownValue = 300; // 5 menit
-      } else if (remainingSeconds > 60) {
-        countdownValue = 180; // 3 menit
-      } else if (remainingSeconds > 30) {
-        countdownValue = 60;
-      } else {
-        countdownValue = 30;
-      }
-
-      setCountdown(countdownValue);
+      setCountdown(displayMinute * 60);
 
       await generateQris(vehicleType, tariff);
     } catch (err: any) {
@@ -135,6 +136,12 @@ export default function LandingPageClient() {
   useEffect(() => {
     if (p1 && p2) fetchData();
   }, [p1, p2]);
+
+  const formatTime = (sec: number) => {
+    const m = String(Math.floor(sec / 60)).padStart(2, "0");
+    const s = String(sec % 60).padStart(2, "0");
+    return `${m}:${s}`;
+  };
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-white to-slate-100 flex items-center justify-center p-4">
@@ -163,61 +170,103 @@ export default function LandingPageClient() {
                 Rp {tariffData?.tariff?.toLocaleString("id-ID") || "-"}
               </h1>
             </div>
-          </div>
-        )}
-
-        {countdown > 0 && (
-          <div className="text-center">
-            <p className="text-lg font-semibold text-orange-600 animate-pulse">
-              {String(Math.floor(countdown / 60)).padStart(2, "0")}:
-              {String(countdown % 60).padStart(2, "0")}
-            </p>
-          </div>
-        )}
-
-        {qrExpired && (
-          <div className="flex justify-center">
-            <button
-              onClick={handleRefreshTariff}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition"
-            >
-              Perbarui Tarif
-            </button>
-          </div>
-        )}
-
-        <div className="flex justify-between items-center mb-2">
-          <div className="flex flex-row items-center gap-2">
-            <Image
-              src="/qris-logo.png"
-              alt="QRIS Logo"
-              width={70}
-              height={70}
-            />
-            <div>
-              <h1 className="text-xs font-bold">QR Code Standar</h1>
-              <p className="text-xs">Pembayaran Nasional</p>
+            <div className="flex justify-between items-start w-full">
+              <h1 className="text-sm font-bold">Status Payment</h1>
+              <h1
+                className={`text-sm ${
+                  tariffData?.paymentStatus === "PAID"
+                    ? "text-green-500"
+                    : "text-red-500"
+                }`}
+              >
+                {tariffData?.paymentStatus || "-"}
+              </h1>
             </div>
           </div>
-          <Image src="/gpn-logo.png" alt="GPN Logo" width={30} height={30} />
-        </div>
+        )}
 
-        <div className="flex justify-center mb-4">
-          {!qrExpired ? (
-            <QrisWithPopup qrContent={qrContent?.toString() || ""} />
-          ) : (
-            <div className="text-center text-red-500 font-semibold text-sm min-h-[200px] m-auto justify-center items-center">
-              QRIS sudah expired, silahkan perbarui tarif.
+        {!isPayment ? (
+          <>
+            {countdown > 0 && (
+              <div className="text-center">
+                <p className="text-lg font-semibold text-orange-600 animate-pulse">
+                  {formatTime(countdown)}
+                </p>
+              </div>
+            )}
+
+            {qrExpired && (
+              <div className="flex justify-center">
+                <button
+                  onClick={handleRefreshTariff}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition"
+                >
+                  Perbarui Tarif
+                </button>
+              </div>
+            )}
+
+            <div className="flex justify-between items-center mb-2">
+              <div className="flex flex-row items-center gap-2">
+                <Image
+                  src="/qris-logo.png"
+                  alt="QRIS Logo"
+                  width={70}
+                  height={70}
+                />
+                <div>
+                  <h1 className="text-xs font-bold">QR Code Standar</h1>
+                  <p className="text-xs">Pembayaran Nasional</p>
+                </div>
+              </div>
+              <Image
+                src="/gpn-logo.png"
+                alt="GPN Logo"
+                width={30}
+                height={30}
+              />
             </div>
-          )}
-        </div>
 
-        <div className="bg-cyan-500/50 p-3 rounded-lg shadow-2xl">
-          <p className="text-sm text-white text-center">
-            Scan Qris atau download qris dan klik button aplikasi Gopay untuk
-            membuka aplikasi gopay kamu
-          </p>
-        </div>
+            <div className="flex justify-center mb-4">
+              {!qrExpired ? (
+                <QrisWithPopup qrContent={qrContent?.toString() || ""} />
+              ) : (
+                <div className="text-center text-red-500 font-semibold text-sm min-h-[200px] m-auto justify-center items-center">
+                  QRIS sudah expired, silahkan perbarui tarif.
+                </div>
+              )}
+            </div>
+
+            <div className="bg-cyan-500/50 p-3 rounded-lg shadow-2xl">
+              <p className="text-sm text-white text-center">
+                Scan Qris atau download qris dan klik button aplikasi Gopay
+                untuk membuka aplikasi gopay kamu
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="flex flex-col justify-center items-center w-full mt-5">
+              <h1 className="text-2xl font-semibold text-slate-600">
+                Pembayaran Berhasil
+              </h1>
+              <GoChecklist size={200} className="text-4xl text-green-500" />
+            </div>
+
+            <div className="bg-red-500/60 p-3 rounded-lg shadow-2xl">
+              <p className="text-sm text-white text-center">
+                Silahkan lakukan scan di pintu keluar sebelum
+              </p>
+              {countdown > 0 && (
+                <div className="text-center">
+                  <p className="text-lg font-semibold text-orange-100 animate-pulse">
+                    {formatTime(countdown)}
+                  </p>
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </main>
   );

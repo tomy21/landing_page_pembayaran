@@ -2,15 +2,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
 interface Payload {
-  product: string;
-  amount: {
-    value: string;
-    currency: string;
-  };
-  externalStoreId: string;
-  additionalInfo: {
-    qrType: string;
-  };
+  NMID: string;
+  transactionNo: string;
+  storeId: string;
+  ProductName: string;
+  amount: number;
+  expiry: string;
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -35,13 +32,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const response = await fetch(`${url}/v1/payment/qris/mpm/generate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data), // 🛠️ kirim langsung objek `data`
-    });
+    const response = await fetch(
+      `${url}/v1/payment/qris/mpm/generate-payment`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data), // 🛠️ kirim langsung objek `data`
+      }
+    );
 
     const result = await response.json();
     return NextResponse.json(result);
