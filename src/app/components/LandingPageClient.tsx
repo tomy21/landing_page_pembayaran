@@ -260,7 +260,7 @@ export default function LandingPageClient() {
                   <p>Pembayaran Berhasil</p>
                 </div>
               ) : !qrExpired ? (
-                <>
+                <div className="flex flex-col items-center space-y-2">
                   <QrisWithPopup
                     qrContent={qrContent?.toString() || ""}
                     isLoading={loading}
@@ -272,7 +272,7 @@ export default function LandingPageClient() {
                       Gopay untuk membuka aplikasi gopay kamu
                     </p>
                   </div>
-                </>
+                </div>
               ) : (
                 <div className="flex flex-col items-center text-center text-red-500 font-semibold text-sm">
                   <p>QRIS sudah expired,</p>
