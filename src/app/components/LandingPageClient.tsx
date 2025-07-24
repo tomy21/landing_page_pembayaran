@@ -43,6 +43,7 @@ export default function LandingPageClient() {
   }, [countdown]);
 
   const generateQris = async (vehicleType: string, tariff: number) => {
+    setLoading(true);
     const mpmRes = await fetch("/api/generateMPM", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -50,7 +51,6 @@ export default function LandingPageClient() {
         data: {
           NMID: p1 || "",
           transactionNo: p2 || "",
-          storeId: "ID2024356887370",
           ProductName: vehicleType,
           amount: tariff || 0,
           expiry: "60",
@@ -65,7 +65,9 @@ export default function LandingPageClient() {
       setStoreId(mpmResult.storeId);
       setTerminalId(mpmResult.terminalId);
       setQrExpired(false);
+      setLoading(false);
     } else {
+      setLoading(false);
       throw new Error("Gagal membuat QRIS baru");
     }
   };
@@ -107,15 +109,35 @@ export default function LandingPageClient() {
       // Hitung selisih waktu
       const now = new Date();
       const inTimeDate = new Date(inTime);
+      console.log("now", now);
+      console.log("inTimeDate", inTimeDate);
+      // Ambil jam dan menit saja
+      const nowHour = now.getHours();
+      const nowMinute = now.getMinutes();
 
-      const diffMs = now.getTime() - inTimeDate.getTime();
-      const diffMinutes = Math.floor(diffMs / 60000);
+      const inHour = inTimeDate.getHours();
+      const inMinute = inTimeDate.getMinutes();
+
+      // Hitung total menit dari pukul 00:00
+      const nowTotalMinutes = nowHour * 60 + nowMinute;
+      const inTotalMinutes = inHour * 60 + inMinute;
+
+      let diffMinutes = nowTotalMinutes - inTotalMinutes;
+      console.log("diffMinutes", nowTotalMinutes);
+      console.log("diffMinutes", inTotalMinutes);
+      console.log("diffMinutes", diffMinutes);
+      // Jika negatif (misal inTime di masa depan hari ini), bisa ubah ke positif atau 0
+      if (diffMinutes < 0) diffMinutes = 0;
 
       let displayMinute = 0;
-      if (diffMinutes >= 5) {
-        displayMinute = 5;
-      } else if (diffMinutes >= 0) {
+      if (nowTotalMinutes < inTotalMinutes) {
+        diffMinutes = 10;
+      } else if (diffMinutes < 1) {
+        displayMinute = 0.3; // 30 detik
+      } else if (diffMinutes < 5) {
         displayMinute = diffMinutes;
+      } else {
+        displayMinute = 5;
       }
 
       setCountdown(displayMinute * 60);
@@ -229,7 +251,10 @@ export default function LandingPageClient() {
 
             <div className="flex justify-center mb-4">
               {!qrExpired ? (
-                <QrisWithPopup qrContent={qrContent?.toString() || ""} />
+                <QrisWithPopup
+                  qrContent={qrContent?.toString() || ""}
+                  isLoading={loading}
+                />
               ) : (
                 <div className="text-center text-red-500 font-semibold text-sm min-h-[200px] m-auto justify-center items-center">
                   QRIS sudah expired, silahkan perbarui tarif.
@@ -237,8 +262,8 @@ export default function LandingPageClient() {
               )}
             </div>
 
-            <div className="bg-cyan-500/50 p-3 rounded-lg shadow-2xl">
-              <p className="text-sm text-white text-center">
+            <div className="bg-yellow-100 p-3 rounded-lg shadow-2xl">
+              <p className="text-sm text-yellow-600 text-center">
                 Scan Qris atau download qris dan klik button aplikasi Gopay
                 untuk membuka aplikasi gopay kamu
               </p>
