@@ -42,7 +42,11 @@ export default function LandingPageClient() {
     return () => clearInterval(interval);
   }, [countdown]);
 
-  const generateQris = async (vehicleType: string, tariff: number) => {
+  const generateQris = async (
+    vehicleType: string,
+    tariff: number,
+    expire: number
+  ) => {
     setLoading(true);
     const mpmRes = await fetch("/api/generateMPM", {
       method: "POST",
@@ -53,7 +57,7 @@ export default function LandingPageClient() {
           transactionNo: p2 || "",
           ProductName: vehicleType,
           amount: tariff || 0,
-          expiry: "60",
+          expiry: expire.toString(),
         },
       }),
     });
@@ -142,7 +146,7 @@ export default function LandingPageClient() {
 
       setCountdown(displayMinute * 60);
 
-      await generateQris(vehicleType, tariff);
+      await generateQris(vehicleType, tariff, displayMinute * 60);
     } catch (err: any) {
       setError(err.message || "Terjadi kesalahan");
     } finally {
