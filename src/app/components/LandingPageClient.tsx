@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { decryptData, encryptData } from "../helper/CryptoUtils";
 import { id } from "date-fns/locale";
 import { format } from "date-fns";
-import { GoChecklist } from "react-icons/go";
+import { GoCheckCircle, GoChecklist } from "react-icons/go";
 
 export default function LandingPageClient() {
   const searchParams = useSearchParams();
@@ -209,7 +209,7 @@ export default function LandingPageClient() {
 
         {!isPayment ? (
           <>
-            {countdown > 0 && (
+            {tariffData?.paymentStatus !== "PAID" && countdown > 0 && (
               <div className="text-center">
                 <p className="text-lg font-semibold text-orange-600 animate-pulse">
                   {formatTime(countdown)}
@@ -249,24 +249,32 @@ export default function LandingPageClient() {
               />
             </div>
 
-            <div className="flex justify-center mb-4">
-              {!qrExpired ? (
-                <QrisWithPopup
-                  qrContent={qrContent?.toString() || ""}
-                  isLoading={loading}
-                />
+            <div className="min-h-[200px] flex items-center justify-center">
+              {tariffData?.paymentStatus === "PAID" ? (
+                <div className="flex flex-col items-center text-center text-green-500 font-semibold text-sm">
+                  <GoCheckCircle size={100} className="text-green-600 mb-2" />
+                  <p>Pembayaran Berhasil</p>
+                </div>
+              ) : !qrExpired ? (
+                <>
+                  <QrisWithPopup
+                    qrContent={qrContent?.toString() || ""}
+                    isLoading={loading}
+                  />
+
+                  <div className="bg-yellow-100 p-3 rounded-lg shadow-2xl">
+                    <p className="text-sm text-yellow-600 text-center">
+                      Scan Qris atau download qris dan klik button aplikasi
+                      Gopay untuk membuka aplikasi gopay kamu
+                    </p>
+                  </div>
+                </>
               ) : (
-                <div className="text-center text-red-500 font-semibold text-sm min-h-[200px] m-auto justify-center items-center">
-                  QRIS sudah expired, silahkan perbarui tarif.
+                <div className="flex flex-col items-center text-center text-red-500 font-semibold text-sm">
+                  <p>QRIS sudah expired,</p>
+                  <p>silahkan perbarui tarif.</p>
                 </div>
               )}
-            </div>
-
-            <div className="bg-yellow-100 p-3 rounded-lg shadow-2xl">
-              <p className="text-sm text-yellow-600 text-center">
-                Scan Qris atau download qris dan klik button aplikasi Gopay
-                untuk membuka aplikasi gopay kamu
-              </p>
             </div>
           </>
         ) : (
