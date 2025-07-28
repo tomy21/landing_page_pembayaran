@@ -118,19 +118,19 @@ export default function QrisWithPopup({
           )}
         </div>
 
-        <div className="my-3">
+        {/* <div className="my-3">
           <p className="text-center text-xs font-semibold">
             SATU QRIS UNTUK SEMUA
           </p>
           <p className="text-center text-[10px] text-gray-500 mb-2">
             Cek aplikasi penyelenggara di: www.aspi-qris.id
           </p>
-        </div>
+        </div> */}
 
         <div className="flex justify-between items-center w-full mb-5 space-x-2">
           <div
             onClick={() => {
-              const goPayLink = `gopay://gopay/qr?code=${qrContent}`;
+              const goPayLink = `gojek://gojek/qr?code=${qrContent}`;
               window.location.href = goPayLink;
 
               // Optional: Fallback jika tidak terinstall
@@ -160,12 +160,12 @@ export default function QrisWithPopup({
           </div>
         </div>
 
-        <div
+        {/* <div
           onClick={startScan}
           className="flex flex-row justify-center text-center bg-yellow-500 rounded-lg p-3 hover:bg-yellow-100 hover:cursor-pointer w-full text-white"
         >
           <p className="text-md">Scan Voucher</p>
-        </div>
+        </div> */}
       </div>
 
       {isScanning && (

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import QrisWithPopup from "./QrisAction";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -12,6 +12,7 @@ export default function LandingPageClient() {
   const searchParams = useSearchParams();
   const p1 = searchParams.get("p1");
   const p2 = searchParams.get("p2");
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const [qrContent, setQrContent] = useState<string | null>(null);
   const [merchantName, setMerchantName] = useState<string | null>(null);
@@ -111,37 +112,23 @@ export default function LandingPageClient() {
       setTariffData(decryptedData.data);
 
       // Hitung selisih waktu
-      const now = new Date();
-      const inTimeDate = new Date(inTime);
-      console.log("now", now);
-      console.log("inTimeDate", inTimeDate);
-      // Ambil jam dan menit saja
-      const nowHour = now.getHours();
-      const nowMinute = now.getMinutes();
+      const now = new Date(); // Waktu sekarang
+      const inTimeDate = new Date(inTime); // Misalnya dari server atau API
+      const minutesNow = inTimeDate.getMinutes().toString().padStart(2, "0");
+      const minutes = now.getMinutes().toString().padStart(2, "0");
 
-      const inHour = inTimeDate.getHours();
-      const inMinute = inTimeDate.getMinutes();
-
-      // Hitung total menit dari pukul 00:00
-      const nowTotalMinutes = nowHour * 60 + nowMinute;
-      const inTotalMinutes = inHour * 60 + inMinute;
-
-      let diffMinutes = nowTotalMinutes - inTotalMinutes;
-      console.log("diffMinutes", nowTotalMinutes);
-      console.log("diffMinutes", inTotalMinutes);
-      console.log("diffMinutes", diffMinutes);
-      // Jika negatif (misal inTime di masa depan hari ini), bisa ubah ke positif atau 0
-      if (diffMinutes < 0) diffMinutes = 0;
-
-      let displayMinute = 0;
-      if (nowTotalMinutes < inTotalMinutes) {
-        diffMinutes = 10;
-      } else if (diffMinutes < 1) {
-        displayMinute = 0.3; // 30 detik
-      } else if (diffMinutes < 5) {
-        displayMinute = diffMinutes;
-      } else {
+      const totalSelisih = Number(minutesNow) - Number(minutes);
+      console.log(totalSelisih);
+      // Atur countdown berdasarkan selisih menit saja
+      let displayMinute;
+      if (totalSelisih <= 1) {
+        displayMinute = 0.5; // 30 detik
+      } else if (totalSelisih < 5) {
+        displayMinute = totalSelisih;
+      } else if (totalSelisih <= 0) {
         displayMinute = 5;
+      } else {
+        displayMinute = 5; // selalu default ke 3 menit
       }
 
       setCountdown(displayMinute * 60);
@@ -157,6 +144,14 @@ export default function LandingPageClient() {
   const handleRefreshTariff = async () => {
     if (!tariffData) return;
     await fetchData();
+
+    // Mulai polling 5 detik
+    intervalRef.current = setInterval(fetchData, 5000);
+
+    // Cleanup
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   };
 
   useEffect(() => {
@@ -265,13 +260,6 @@ export default function LandingPageClient() {
                     qrContent={qrContent?.toString() || ""}
                     isLoading={loading}
                   />
-
-                  <div className="bg-yellow-100 p-3 rounded-lg shadow-2xl">
-                    <p className="text-sm text-yellow-600 text-center">
-                      Scan Qris atau download qris dan klik button aplikasi
-                      Gopay untuk membuka aplikasi gopay kamu
-                    </p>
-                  </div>
                 </div>
               ) : (
                 <div className="flex flex-col items-center text-center text-red-500 font-semibold text-sm">
