@@ -83,7 +83,7 @@ export default function LandingPageClient() {
     try {
       const payload = {
         login: "SKY_TOMY-SOEHARTO",
-        password: process.env.NEXT_PUBLIC_PASSWORD?.toString() || "",
+        password: process.env.NEXT_PUBLIC_PASSWORD || "",
         storeID: p1 || "",
         transactionNo: p2 || "",
       };

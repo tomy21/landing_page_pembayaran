@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: data,
+        body: JSON.stringify(payload),
       }
     );
 
