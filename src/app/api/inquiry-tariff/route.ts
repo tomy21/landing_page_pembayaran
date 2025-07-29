@@ -9,6 +9,8 @@ export async function POST(req: NextRequest) {
       data: data,
     };
 
+    console.log("", payload);
+
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_URL_INQUIRY}/v1/parking/Partner/InquiryTariffREG`,
       {
