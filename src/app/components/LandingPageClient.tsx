@@ -83,10 +83,11 @@ export default function LandingPageClient() {
     try {
       const payload = {
         login: "SKY_TOMY-SOEHARTO",
-        password: process.env.NEXT_PUBLIC_PASSWORD || "",
-        storeID: p1 || "",
-        transactionNo: p2 || "",
+        password: process.env.NEXT_PUBLIC_PASSWORD ?? "",
+        storeID: p1 ?? "",
+        transactionNo: p2 ?? "",
       };
+      console.log(payload);
 
       const encryptedPayload = encryptData(payload);
 
