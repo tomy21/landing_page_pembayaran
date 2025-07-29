@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
     console.log(process.env.NEXT_PUBLIC_URL_DEV_GENERATE_SIGNATURE);
     const payload = {
       login: "SKY_TOMY-SOEHARTO",
-      password: "c43cba3b7b7d5c319a3f284a5d8188ac",
+      password: process.env.NEXT_PUBLIC_PASSWORD,
       storeID,
       transactionNo,
     };

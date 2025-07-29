@@ -14,7 +14,7 @@ services:
       - NEXT_PUBLIC_SECRET_KEY_GENERATE=4636be61aaafdef65e11665422990a58
       - NEXT_PUBLIC_PASSWORD=c43cba3b7b7d5c319a3f284a5d8188ac
       - NEXT_PUBLIC_URL_INQUIRY=https://integrationparkingservice.skyparking.online
-      - NEXT_PUBLIC_URL_DEV_GENERATE_SIGNATURE=https://devintegrationv2.skyparking.online
+      - NEXT_PUBLIC_URL_DEV_GENERATE_SIGNATURE=https://integrationparkingservice.skyparking.online
       - NEXT_PUBLIC_URL_GENERATE_MPM=https://apipayment.skyparking.online
 
     restart: always
