@@ -94,7 +94,7 @@ export default function LandingPageClient() {
       const tariffRes = await fetch("/api/inquiry-tariff", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: encryptedPayload,
+        body: JSON.stringify({ data: encryptedPayload }),
       });
 
       const tariffResult = await tariffRes.json();
