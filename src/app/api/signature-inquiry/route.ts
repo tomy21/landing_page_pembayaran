@@ -3,14 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const { storeID, transactionNo } = await req.json();
-    console.log(process.env.NEXT_PUBLIC_URL_DEV_GENERATE_SIGNATURE);
+
     const payload = {
       login: "SKY_TOMY-SOEHARTO",
       password: process.env.NEXT_PUBLIC_PASSWORD,
       storeID,
       transactionNo,
     };
-    console.log("", payload);
+
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_URL_DEV_GENERATE_SIGNATURE}/v1/parking/Signature-Inquiry`,
       {

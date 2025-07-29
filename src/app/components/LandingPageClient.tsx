@@ -87,11 +87,9 @@ export default function LandingPageClient() {
         storeID: p1 ?? "",
         transactionNo: p2 ?? "",
       };
-      console.log(payload);
 
       const encryptedPayload = encryptData(payload);
 
-      console.log(encryptedPayload);
       const tariffRes = await fetch("/api/inquiry-tariff", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -2,9 +2,7 @@ import CryptoJS, { MD5 } from "crypto-js";
 
 const GIBERISH_KEY =
   process.env.NEXT_PUBLIC_GIBERISH_KEY || "default_secret_key";
-const SECRET_KEY =
-  process.env.NEXT_PUBLIC_SECRET_KEY_GENERATE ||
-  "4636be61aaafdef65e11665422990a58";
+const SECRET_KEY = process.env.NEXT_PUBLIC_SECRET_KEY_GENERATE || "default_key";
 
 interface Data {
   login: string;

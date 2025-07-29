@@ -3,13 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const { data } = await req.json();
-    console.log(process.env.NEXT_PUBLIC_URL_INQUIRY);
 
     const payload = {
       data: data,
     };
-
-    console.log("", payload);
 
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_URL_INQUIRY}/v1/parking/Partner/InquiryTariffREG`,
