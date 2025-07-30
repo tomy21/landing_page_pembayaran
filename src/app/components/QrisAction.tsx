@@ -130,18 +130,19 @@ export default function QrisWithPopup({
         <div className="flex justify-between items-center w-full mb-5 space-x-2">
           <div
             onClick={() => {
-              const goPayLink = `gojek://gojek/qr?code=${qrContent}`;
-              window.location.href = goPayLink;
+              const goJekLink = `gojek://gojek/qr?code=${qrContent}`;
+              window.location.href = goJekLink;
 
               // Optional: Fallback jika tidak terinstall
               setTimeout(() => {
-                window.open("https://gojek.com/gopay", "_blank");
+                const goPayLink = `gopay://gopay/qr?code=${qrContent}`;
+                window.location.href = goPayLink;
               }, 2000);
             }}
             className="flex flex-row justify-start items-start border border-yellow-400 rounded-lg p-2 hover:bg-yellow-100 hover:cursor-pointer w-full"
           >
             <Image
-              src="/logoGopay.png"
+              src="/gojek-logo.png"
               alt="gopay"
               width={30}
               height={30}
@@ -149,7 +150,7 @@ export default function QrisWithPopup({
             />
             <div className="flex flex-col justify-start items-start text-yellow-500">
               <p className="text-xs">Buka Aplikasi</p>
-              <p className="text-xs">Gopay</p>
+              <p className="text-xs">Gojek</p>
             </div>
           </div>
           <div
