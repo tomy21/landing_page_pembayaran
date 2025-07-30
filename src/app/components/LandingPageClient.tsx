@@ -12,6 +12,7 @@ export default function LandingPageClient() {
   const searchParams = useSearchParams();
   const p1 = searchParams.get("p1");
   const p2 = searchParams.get("p2");
+
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const [qrContent, setQrContent] = useState<string | null>(null);
@@ -25,10 +26,9 @@ export default function LandingPageClient() {
   const [qrExpired, setQrExpired] = useState<boolean>(false);
   const [isPayment, setIsPayment] = useState<boolean>(false);
 
-  // Countdown handler
+  // ⏳ Countdown timer
   useEffect(() => {
     if (countdown <= 0) return;
-
     const interval = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -39,10 +39,10 @@ export default function LandingPageClient() {
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(interval);
   }, [countdown]);
 
+  // 🚀 Generate QR
   const generateQris = async (
     vehicleType: string,
     tariff: number,
@@ -70,13 +70,13 @@ export default function LandingPageClient() {
       setStoreId(mpmResult.storeId);
       setTerminalId(mpmResult.terminalId);
       setQrExpired(false);
-      setLoading(false);
     } else {
-      setLoading(false);
       throw new Error("Gagal membuat QRIS baru");
     }
+    setLoading(false);
   };
 
+  // 📦 Fetch Tariff & Inisialisasi QR
   const fetchData = async () => {
     setLoading(true);
     setError(null);
@@ -94,6 +94,8 @@ export default function LandingPageClient() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data: encryptedPayload }),
+        keepalive: true, // tidak memblokir page unload
+        mode: "no-cors",
       });
 
       const tariffResult = await tariffRes.json();
@@ -103,32 +105,29 @@ export default function LandingPageClient() {
         throw new Error("Invalid response");
       }
 
-      const { vehicleType, tariff, inTime } = decryptedData.data;
+      const { vehicleType, tariff, inTime, paymentStatus } = decryptedData.data;
 
-      if (decryptedData.data.paymentStatus !== "PAID") {
+      if (paymentStatus === "PAID") {
+        setIsPayment(true);
+      } else {
         setIsPayment(false);
       }
 
       setTariffData(decryptedData.data);
 
-      // Hitung selisih waktu
-      const now = new Date(); // Waktu sekarang
-      const inTimeDate = new Date(inTime); // Misalnya dari server atau API
-      const minutesNow = inTimeDate.getMinutes().toString().padStart(2, "0");
-      const minutes = now.getMinutes().toString().padStart(2, "0");
+      const now = new Date();
+      const inTimeDate = new Date(inTime);
+      const minutesNow = inTimeDate.getMinutes();
+      const minutes = now.getMinutes();
+      const totalSelisih = minutesNow - minutes;
 
-      const totalSelisih = Number(minutesNow) - Number(minutes);
-      console.log(totalSelisih);
-      // Atur countdown berdasarkan selisih menit saja
       let displayMinute;
       if (totalSelisih <= 1) {
-        displayMinute = 0.5; // 30 detik
+        displayMinute = 0.5;
       } else if (totalSelisih < 5) {
         displayMinute = totalSelisih;
-      } else if (totalSelisih <= 0) {
-        displayMinute = 5;
       } else {
-        displayMinute = 5; // selalu default ke 3 menit
+        displayMinute = 5;
       }
 
       setCountdown(displayMinute * 60);
@@ -144,19 +143,54 @@ export default function LandingPageClient() {
   const handleRefreshTariff = async () => {
     if (!tariffData) return;
     await fetchData();
-
-    // Mulai polling 5 detik
-    intervalRef.current = setInterval(fetchData, 5000);
-
-    // Cleanup
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
   };
 
   useEffect(() => {
     if (p1 && p2) fetchData();
   }, [p1, p2]);
+
+  // 🕵️‍♂️ Polling Status Pembayaran
+  useEffect(() => {
+    if (qrContent && !isPayment && !qrExpired) {
+      intervalRef.current = setInterval(() => {
+        const payload = {
+          login: "SKY_TOMY-SOEHARTO",
+          password: process.env.NEXT_PUBLIC_PASSWORD ?? "",
+          storeID: p1 ?? "",
+          transactionNo: p2 ?? "",
+        };
+
+        const encryptedPayload = encryptData(payload);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/inquiry-tariff", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            try {
+              const result = JSON.parse(xhr.responseText);
+              const decrypted = decryptData(result.data);
+
+              if (decrypted?.data?.paymentStatus === "PAID") {
+                setTariffData(decrypted.data);
+                setIsPayment(true);
+                clearInterval(intervalRef.current!);
+              }
+            } catch (e) {
+              console.error("Polling JSON parse error:", e);
+            }
+          }
+        };
+
+        xhr.send(JSON.stringify({ data: encryptedPayload }));
+      }, 5000);
+    }
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [qrContent, isPayment, qrExpired]);
 
   const formatTime = (sec: number) => {
     const m = String(Math.floor(sec / 60)).padStart(2, "0");
@@ -249,18 +283,11 @@ export default function LandingPageClient() {
             </div>
 
             <div className="min-h-[200px] flex items-center justify-center">
-              {tariffData?.paymentStatus === "PAID" ? (
-                <div className="flex flex-col items-center text-center text-green-500 font-semibold text-sm">
-                  <GoCheckCircle size={100} className="text-green-600 mb-2" />
-                  <p>Pembayaran Berhasil</p>
-                </div>
-              ) : !qrExpired ? (
-                <div className="flex flex-col items-center space-y-2">
-                  <QrisWithPopup
-                    qrContent={qrContent?.toString() || ""}
-                    isLoading={loading}
-                  />
-                </div>
+              {!qrExpired ? (
+                <QrisWithPopup
+                  qrContent={qrContent?.toString() || ""}
+                  isLoading={loading}
+                />
               ) : (
                 <div className="flex flex-col items-center text-center text-red-500 font-semibold text-sm">
                   <p>QRIS sudah expired,</p>
@@ -278,7 +305,7 @@ export default function LandingPageClient() {
               <GoChecklist size={200} className="text-4xl text-green-500" />
             </div>
 
-            <div className="bg-red-500/60 p-3 rounded-lg shadow-2xl">
+            <div className="bg-red-500/60 p-3 rounded-lg shadow-2xl mt-4">
               <p className="text-sm text-white text-center">
                 Silahkan lakukan scan di pintu keluar sebelum
               </p>
