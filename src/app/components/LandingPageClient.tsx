@@ -127,7 +127,7 @@ export default function LandingPageClient() {
         displayMinute = 0.5;
       } else if (totalSelisih < 5) {
         displayMinute = totalSelisih;
-      } else if (totalSelisih > 0) {
+      } else if (totalSelisih >= 0) {
         displayMinute = 5;
       } else {
         displayMinute = 5;
