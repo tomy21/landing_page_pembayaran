@@ -122,6 +122,7 @@ export default function LandingPageClient() {
       const totalSelisih = minutesNow - minutes;
 
       let displayMinute;
+      console.log("total selisih", totalSelisih);
       if (totalSelisih === 1) {
         displayMinute = 0.5;
       } else if (totalSelisih < 5) {
