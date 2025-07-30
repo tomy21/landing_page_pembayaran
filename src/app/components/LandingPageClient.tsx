@@ -151,46 +151,35 @@ export default function LandingPageClient() {
 
   // 🕵️‍♂️ Polling Status Pembayaran
   useEffect(() => {
-    if (qrContent && !isPayment && !qrExpired) {
-      intervalRef.current = setInterval(() => {
-        const payload = {
-          login: "SKY_TOMY-SOEHARTO",
-          password: process.env.NEXT_PUBLIC_PASSWORD ?? "",
-          storeID: p1 ?? "",
-          transactionNo: p2 ?? "",
-        };
+    const p1Ticket = p1;
+    const p2Ticket = p2;
 
-        const encryptedPayload = encryptData(payload);
+    const eventSource = new EventSource(
+      `/api/check-ticket?P1=${p1Ticket}&P2=${p2Ticket}`
+    );
 
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", "/api/inquiry-tariff", true);
-        xhr.setRequestHeader("Content-Type", "application/json");
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log("📡 Status QRIS:", data.data.paymentStatus);
 
-        xhr.onreadystatechange = function () {
-          if (xhr.readyState === 4 && xhr.status === 200) {
-            try {
-              const result = JSON.parse(xhr.responseText);
-              const decrypted = decryptData(result.data);
+      if (["PAID", "FAILED"].includes(data.data.paymentStatus)) {
+        eventSource.close();
+      }
 
-              if (decrypted?.data?.paymentStatus === "PAID") {
-                setTariffData(decrypted.data);
-                setIsPayment(true);
-                clearInterval(intervalRef.current!);
-              }
-            } catch (e) {
-              console.error("Polling JSON parse error:", e);
-            }
-          }
-        };
+      if (data.data.paymentStatus === "PAID") {
+        setIsPayment(true);
+      }
+    };
 
-        xhr.send(JSON.stringify({ data: encryptedPayload }));
-      }, 5000);
-    }
+    eventSource.onerror = (err) => {
+      console.error("SSE error:", err);
+      eventSource.close();
+    };
 
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      eventSource.close();
     };
-  }, [qrContent, isPayment, qrExpired]);
+  }, []);
 
   const formatTime = (sec: number) => {
     const m = String(Math.floor(sec / 60)).padStart(2, "0");
