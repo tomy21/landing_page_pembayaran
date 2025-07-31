@@ -119,7 +119,8 @@ export default function LandingPageClient() {
       const inTimeDate = new Date(inTime);
       const minutesNow = inTimeDate.getMinutes();
       const minutes = now.getMinutes();
-      const totalSelisih = Math.abs(minutesNow - minutes);
+      const expired = Math.abs(minutesNow - minutes);
+      const totalSelisih = minutesNow - minutes;
 
       let displayMinute;
       console.log("total selisih", totalSelisih);
@@ -135,7 +136,7 @@ export default function LandingPageClient() {
 
       setCountdown(displayMinute * 60);
 
-      await generateQris(vehicleType, tariff, displayMinute * 60);
+      await generateQris(vehicleType, tariff, expired * 60);
     } catch (err: any) {
       setError(err.message || "Terjadi kesalahan");
     } finally {
