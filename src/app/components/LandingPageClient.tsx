@@ -119,7 +119,7 @@ export default function LandingPageClient() {
       const inTimeDate = new Date(inTime);
       const minutesNow = inTimeDate.getMinutes();
       const minutes = now.getMinutes();
-      const totalSelisih = minutesNow - minutes;
+      const totalSelisih = Math.abs(minutesNow - minutes);
 
       let displayMinute;
       console.log("total selisih", totalSelisih);
