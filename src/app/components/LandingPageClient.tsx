@@ -120,16 +120,15 @@ export default function LandingPageClient() {
       const minutesNow = inTimeDate.getMinutes();
       const minutes = now.getMinutes();
       const expired = Math.abs(minutesNow - minutes);
-      const totalSelisih = minutesNow - minutes;
 
       let displayMinute;
-      console.log("total selisih", totalSelisih);
-      if (totalSelisih === 1) {
+      console.log("total selisih", expired);
+      if (expired === 1) {
         displayMinute = 0.5;
-      } else if (totalSelisih >= 0) {
+      } else if (minutesNow < minutes && expired >= 0) {
         displayMinute = 5;
-      } else if (totalSelisih < 5) {
-        displayMinute = totalSelisih;
+      } else if (minutesNow < minutes && expired < 5) {
+        displayMinute = expired;
       } else {
         displayMinute = 5;
       }
