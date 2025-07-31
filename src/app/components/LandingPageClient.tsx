@@ -173,6 +173,8 @@ export default function LandingPageClient() {
       }
 
       if (data.data.paymentStatus === "PAID") {
+        setCountdown(30 * 60);
+        fetchData();
         setIsPayment(true);
       }
     };
