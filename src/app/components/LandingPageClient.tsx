@@ -123,14 +123,18 @@ export default function LandingPageClient() {
 
       let displayMinute;
       console.log("total selisih", expired);
-      if (expired === 1) {
-        displayMinute = 0.5;
-      } else if (minutesNow < minutes && expired >= 0) {
-        displayMinute = 5;
-      } else if (minutesNow < minutes && expired < 5) {
-        displayMinute = expired;
+      if (isPayment) {
+        displayMinute = 30;
       } else {
-        displayMinute = 5;
+        if (expired === 1) {
+          displayMinute = 0.5;
+        } else if (minutesNow < minutes && expired >= 0) {
+          displayMinute = 5;
+        } else if (minutesNow < minutes && expired < 5) {
+          displayMinute = expired;
+        } else {
+          displayMinute = 5;
+        }
       }
 
       setCountdown(displayMinute * 60);
@@ -170,7 +174,6 @@ export default function LandingPageClient() {
       }
 
       if (data.data.paymentStatus === "PAID") {
-        setCountdown(30);
         setIsPayment(true);
       }
     };
