@@ -106,7 +106,6 @@ export default function LandingPageClient() {
       }
 
       const { vehicleType, tariff, inTime, paymentStatus } = decryptedData.data;
-
       if (paymentStatus === "PAID") {
         setIsPayment(true);
       } else {
@@ -123,7 +122,7 @@ export default function LandingPageClient() {
 
       let displayMinute;
       console.log("total selisih", expired);
-      if (isPayment === true) {
+      if (paymentStatus === "PAID") {
         displayMinute = 30;
       } else {
         if (expired === 1) {
