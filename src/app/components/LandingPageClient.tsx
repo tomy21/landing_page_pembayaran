@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { decryptData, encryptData } from "../helper/CryptoUtils";
 import { id } from "date-fns/locale";
 import { format } from "date-fns";
-import { GoCheckCircle, GoChecklist } from "react-icons/go";
+import { FaCheck } from "react-icons/fa";
 
 export default function LandingPageClient() {
   const searchParams = useSearchParams();
@@ -170,6 +170,7 @@ export default function LandingPageClient() {
       }
 
       if (data.data.paymentStatus === "PAID") {
+        setCountdown(30);
         setIsPayment(true);
       }
     };
@@ -294,7 +295,7 @@ export default function LandingPageClient() {
               <h1 className="text-2xl font-semibold text-slate-600">
                 Pembayaran Berhasil
               </h1>
-              <GoChecklist size={200} className="text-4xl text-green-500" />
+              <FaCheck size={200} className="text-4xl text-green-500" />
             </div>
 
             <div className="bg-red-500/60 p-3 rounded-lg shadow-2xl mt-4">
