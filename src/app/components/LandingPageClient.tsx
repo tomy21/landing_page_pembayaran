@@ -123,7 +123,7 @@ export default function LandingPageClient() {
 
       let displayMinute;
       console.log("total selisih", expired);
-      if (isPayment) {
+      if (isPayment === true) {
         displayMinute = 30;
       } else {
         if (expired === 1) {
