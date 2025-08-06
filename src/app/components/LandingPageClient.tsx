@@ -25,6 +25,7 @@ export default function LandingPageClient() {
   const [countdown, setCountdown] = useState<number>(0);
   const [qrExpired, setQrExpired] = useState<boolean>(false);
   const [isPayment, setIsPayment] = useState<boolean>(false);
+  const [isFree, setIsFree] = useState<boolean>(false);
 
   // ⏳ Countdown timer
   useEffect(() => {
@@ -112,6 +113,10 @@ export default function LandingPageClient() {
         setIsPayment(false);
       }
 
+      if (paymentStatus === "FREE") {
+        setIsFree(true);
+      }
+
       setTariffData(decryptedData.data);
 
       const now = new Date();
@@ -156,38 +161,38 @@ export default function LandingPageClient() {
   }, [p1, p2]);
 
   // 🕵️‍♂️ Polling Status Pembayaran
-  useEffect(() => {
-    const p1Ticket = p1;
-    const p2Ticket = p2;
+  // useEffect(() => {
+  //   const p1Ticket = p1;
+  //   const p2Ticket = p2;
 
-    const eventSource = new EventSource(
-      `/api/check-ticket?P1=${p1Ticket}&P2=${p2Ticket}`
-    );
+  //   const eventSource = new EventSource(
+  //     `/api/check-ticket?P1=${p1Ticket}&P2=${p2Ticket}`
+  //   );
 
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      console.log("📡 Status QRIS:", data.data.paymentStatus);
+  //   eventSource.onmessage = (event) => {
+  //     const data = JSON.parse(event.data);
+  //     console.log("📡 Status QRIS:", data.data.paymentStatus);
 
-      if (["PAID", "FAILED"].includes(data.data.paymentStatus)) {
-        eventSource.close();
-      }
+  //     if (["PAID", "FAILED"].includes(data.data.paymentStatus)) {
+  //       eventSource.close();
+  //     }
 
-      if (data.data.paymentStatus === "PAID") {
-        setCountdown(30 * 60);
-        fetchData();
-        setIsPayment(true);
-      }
-    };
+  //     if (data.data.paymentStatus === "PAID") {
+  //       setCountdown(30 * 60);
+  //       fetchData();
+  //       setIsPayment(true);
+  //     }
+  //   };
 
-    eventSource.onerror = (err) => {
-      console.error("SSE error:", err);
-      eventSource.close();
-    };
+  //   eventSource.onerror = (err) => {
+  //     console.error("SSE error:", err);
+  //     eventSource.close();
+  //   };
 
-    return () => {
-      eventSource.close();
-    };
-  }, []);
+  //   return () => {
+  //     eventSource.close();
+  //   };
+  // }, []);
 
   const formatTime = (sec: number) => {
     const m = String(Math.floor(sec / 60)).padStart(2, "0");
@@ -295,25 +300,34 @@ export default function LandingPageClient() {
           </>
         ) : (
           <>
-            <div className="flex flex-col justify-center items-center w-full mt-5">
-              <h1 className="text-2xl font-semibold text-slate-600">
-                Pembayaran Berhasil
-              </h1>
-              <FaCheck size={200} className="text-4xl text-green-500" />
-            </div>
-
-            <div className="bg-red-500/60 p-3 rounded-lg shadow-2xl mt-4">
-              <p className="text-sm text-white text-center">
-                Silahkan lakukan scan di pintu keluar sebelum
-              </p>
-              {countdown > 0 && (
-                <div className="text-center">
-                  <p className="text-lg font-semibold text-orange-100 animate-pulse">
-                    {formatTime(countdown)}
-                  </p>
+            {isFree ? (
+              <div className="flex flex-col items-center text-center text-green-500 font-semibold text-sm">
+                <p>QRIS sudah expired,</p>
+                <p>silahkan perbarui tarif.</p>
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-col justify-center items-center w-full mt-5">
+                  <h1 className="text-2xl font-semibold text-slate-600">
+                    Pembayaran Berhasil
+                  </h1>
+                  <FaCheck size={200} className="text-4xl text-green-500" />
                 </div>
-              )}
-            </div>
+
+                <div className="bg-red-500/60 p-3 rounded-lg shadow-2xl mt-4">
+                  <p className="text-sm text-white text-center">
+                    Silahkan lakukan scan di pintu keluar sebelum
+                  </p>
+                  {countdown > 0 && (
+                    <div className="text-center">
+                      <p className="text-lg font-semibold text-orange-100 animate-pulse">
+                        {formatTime(countdown)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </>
         )}
       </div>
